@@ -1,0 +1,16 @@
+author: Martin Thurn <mthurn@cpan.org>
+build_requires: 
+  Test::More: 0
+distribution_type: module
+generated_by: Module::Install version 0.64
+license: perl
+name: WWW-Search-Search
+no_index: 
+  directory: 
+    - inc
+    - t
+requires: 
+  Carp: 0
+  WWW::Search: 0
+  perl: 5.004
+version: 1.003
