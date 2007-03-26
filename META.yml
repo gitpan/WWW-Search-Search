@@ -11,6 +11,7 @@ no_index:
     - t
 requires: 
   Carp: 0
+  URI::Escape: 0
   WWW::Search: 0
   perl: 5.004
-version: 1.003
+version: 1.004

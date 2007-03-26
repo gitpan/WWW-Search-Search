@@ -1,5 +1,5 @@
 
-# $Id: search-basic.t,v 1.2 2007/03/23 20:14:16 Daddy Exp $
+# $Id: search-basic.t,v 1.3 2007/03/25 23:59:07 Daddy Exp $
 
 use ExtUtils::testlib;
 use Test::More no_plan;
@@ -22,7 +22,7 @@ diag("Sending bogus query to search.com...");
 TEST_NOW:
 diag("Sending 1-page query to search.com...");
 $iDebug = 0;
-$iDump = 0;
+$iDump = 1;
 &tm_run_test('normal', 'oden'.'ized', 1, 9, $iDebug, $iDump);
 # Look at some actual results:
 @ao = $WWW::Search::Test::oSearch->results();
@@ -32,6 +32,8 @@ foreach my $oResult (@ao)
   next unless ref($oResult);
   like($oResult->url, qr{\Ahttp://},
        'result URL is http');
+  unlike($oResult->url, qr{&#8230;}, 'url does not contain HTML ellipsis');
+  unlike($oResult->url, qr(\x{2026}), 'url does not contain Unicode ellipsis');
   cmp_ok($oResult->title, 'ne', '',
          'result title is not empty');
   cmp_ok($oResult->description, 'ne', '',

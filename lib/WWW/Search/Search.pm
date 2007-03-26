@@ -1,4 +1,4 @@
-# $Id: Search.pm,v 1.3 2007/03/23 20:16:07 Daddy Exp $
+# $Id: Search.pm,v 1.4 2007/03/25 23:58:49 Daddy Exp $
 
 =head1 NAME
 
@@ -57,10 +57,11 @@ require Exporter;
 @ISA = qw(WWW::Search Exporter);
 
 my
-$VERSION = do { my @r = (q$Revision: 1.3 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 1.4 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use Carp;
+use URI::Escape;
 use WWW::Search;
 use WWW::Search::Result;
 
@@ -173,13 +174,18 @@ sub parse_tree
                                  class => 'title');
     next LI_TAG unless ref $oAtitle;
     my $sTitle = $oAtitle->as_text;
+    my $sURL = $oAtitle->attr('href');
+    if ($sURL =~ m!,(http.+)\Z!)
+      {
+      $sURL = uri_unescape($1);
+      } # if
     $oAtitle->detach;
     $oAtitle->delete;
     my $oSPANurl = $oLI->look_down(_tag => 'span',
                                    class => 'url');
     next LI_TAG unless ref $oSPANurl;
-    my $sURL = 'http://'. $oSPANurl->as_text;
-    $sURL =~ s!\240.+!!;
+    # my $sURL = 'http://'. $oSPANurl->as_text;
+    # $sURL =~ s!\240.+!!;
     # Delete so that what's left is the description:
     $oSPANurl->detach;
     $oSPANurl->delete;
