@@ -1,3 +1,7 @@
+2007-07-13    <Daddy@C-3PO>
+
+	* lib/WWW/Search/Search.pm (parse_tree): fixed a typo and added use strict
+
 2007-03-25    <Daddy@C-3PO>
 
 	* lib/WWW/Search/Search.pm (parse_tree): FIX for URLs containing elipsis

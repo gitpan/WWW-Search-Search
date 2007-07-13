@@ -1,4 +1,4 @@
-# $Id: Search.pm,v 1.4 2007/03/25 23:58:49 Daddy Exp $
+# $Id: Search.pm,v 1.7 2007/07/13 17:30:12 Daddy Exp $
 
 =head1 NAME
 
@@ -51,14 +51,13 @@ MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 package WWW::Search::Search;
 
-require Exporter;
-@EXPORT = qw();
-@EXPORT_OK = qw();
-@ISA = qw(WWW::Search Exporter);
+use strict;
 
-my
-$VERSION = do { my @r = (q$Revision: 1.4 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
-$MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
+use base 'WWW::Search';
+
+our
+$VERSION = do { my @r = (q$Revision: 1.7 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+my $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use Carp;
 use URI::Escape;
@@ -71,7 +70,6 @@ sub gui_query
   return $self->native_query(@_);
   } # gui_query
 
-
 sub native_setup_search
   {
   my ($self, $native_query, $native_options_ref) = @_;
@@ -79,15 +77,13 @@ sub native_setup_search
   $self->{_debug} = 2 if ($native_options_ref->{'search_parse_debug'});
   $self->{_debug} = 0 if (!defined($self->{_debug}));
 
-  # search.com returns 10 hits per page no matter what.
-  $self->{'_hits_per_page'} = 10;
-
   # $self->{agent_e_mail} = 'mthurn@cpan.org';
   $self->user_agent('non-robot');
 
   $self->{_next_to_retrieve} = 1;
   $self->{'_num_hits'} = 0;
-
+  # search.com returns 10 hits per page no matter what.
+  $self->{'_hits_per_page'} = 10;
   if (!defined($self->{_options}))
     {
     $self->{'search_base_url'} = 'http://www.search.com';
@@ -96,9 +92,7 @@ sub native_setup_search
                          'q' => $native_query,
                         };
     } # if
-
   my $options_ref = $self->{_options};
-
   # Copy in options which were passed in our second argument:
   if (defined($native_options_ref))
     {
@@ -107,7 +101,6 @@ sub native_setup_search
       $options_ref->{$_} = $native_options_ref->{$_};
       } # foreach
     } # if
-
   # Copy in options which were set by a child object:
   if (defined($self->{'_child_options'}))
     {
@@ -116,8 +109,7 @@ sub native_setup_search
       $self->{'_options'}->{$_} = $self->{'_child_options'}->{$_};
       } # foreach
     } # if
-
-  # Finally figure out the url.
+  # Finally, figure out the url.
   $self->{_next_url} = $self->{_options}{'search_url'} .'?'. $self->hash_to_cgi_string($self->{_options});
   } # native_setup_search
 
@@ -136,7 +128,7 @@ sub parse_tree
   my $self = shift;
   my $oTree = shift;
   my $hits_found = 0;
-  if (! $self_approximate_result_count)
+  if (! $self->approximate_result_count)
     {
     my $oTITLE = $oTree->look_down('_tag' => 'div',
                                    class => 'statusbar',
