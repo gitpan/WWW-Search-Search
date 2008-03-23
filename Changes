@@ -1,6 +1,6 @@
-2007-07-13    <Daddy@C-3PO>
+2008-03-23    <Martin@BLUEMAX>
 
-	* lib/WWW/Search/Search.pm (parse_tree): fixed a typo and added use strict
+	* lib/WWW/Search/Search.pm (parse_tree): FIX for new HTML formatting
 
 2007-03-25    <Daddy@C-3PO>
 

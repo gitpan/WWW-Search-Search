@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.3 2007/03/25 23:59:35 Daddy Exp $
+# $Id: Makefile.PL,v 1.4 2008/03/23 18:48:17 Martin Exp $
 
 use inc::Module::Install;
 
@@ -13,7 +13,7 @@ requires('URI::Escape');
 requires('WWW::Search');
 build_requires('Test::More');
 
-&WriteAll;
+WriteAll;
 
 1;
 

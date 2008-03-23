@@ -1,7 +1,7 @@
 
-# $Id: search-basic.t,v 1.3 2007/03/25 23:59:07 Daddy Exp $
+# $Id: search-basic.t,v 1.4 2008/03/23 18:48:39 Martin Exp $
 
-use ExtUtils::testlib;
+use blib;
 use Test::More no_plan;
 
 BEGIN { use_ok('WWW::Search') };
@@ -18,14 +18,7 @@ my @ao;
 
 # This test returns no results (but we should not get an HTTP error):
 diag("Sending bogus query to search.com...");
-$iDebug = 0;
-$iDump = 1;
 &tm_run_test('normal', $WWW::Search::Test::bogus_query, 0, 0, $iDebug);
-
-diag("Sending multi-page query to search.com...");
-$iDebug = 0;
-$iDump = 0;
-&tm_run_test('normal', 'the lovely Britney Spears', 21, undef, $iDebug, $iDump);
 TEST_NOW:
 diag("Sending 1-page query to search.com...");
 $iDebug = 0;
@@ -46,7 +39,11 @@ foreach my $oResult (@ao)
   cmp_ok($oResult->description, 'ne', '',
          'result description is not empty');
   } # foreach
-goto ALL_DONE; # for debugging
+# goto ALL_DONE; # for debugging
+diag("Sending multi-page query to search.com...");
+$iDebug = 0;
+$iDump = 0;
+&tm_run_test('normal', 'the lovely Britney Spears', 21, undef, $iDebug, $iDump);
 ALL_DONE:
 exit 0;
 

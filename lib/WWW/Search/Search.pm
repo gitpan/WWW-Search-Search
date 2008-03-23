@@ -1,4 +1,4 @@
-# $Id: Search.pm,v 1.8 2007/11/12 01:09:22 Daddy Exp $
+# $Id: Search.pm,v 1.10 2008/03/23 18:35:59 Martin Exp $
 
 =head1 NAME
 
@@ -21,33 +21,15 @@ making and interpreting searches at F<http://www.search.com>.
 This class exports no public interface; all interaction should
 be done through L<WWW::Search> objects.
 
-=head1 NOTES
+=head1 PRIVATE METHODS
 
-The query is applied as "ALL these words"
-(i.e. boolean AND of all the query terms)
+In order to use this module,
+you do NOT need to know about these methods;
+they are just part of the underlying WWW::Search mechanism.
 
-=head1 SEE ALSO
-
-To make new back-ends, see L<WWW::Search>.
-
-=head1 BUGS
-
-Please tell the author if you find any!
-
-=head1 AUTHOR
-
-C<WWW::Search::Search> was originally written by Martin Thurn,
-based loosely on the code for C<WWW::Search::Lycos>.
-
-=head1 LEGALESE
-
-THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+=over
 
 =cut
-
-#####################################################################
 
 package WWW::Search::Search;
 
@@ -57,7 +39,7 @@ use warnings;
 use base 'WWW::Search';
 
 our
-$VERSION = do { my @r = (q$Revision: 1.8 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 1.10 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 my $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use Carp;
@@ -65,11 +47,21 @@ use URI::Escape;
 use WWW::Search;
 use WWW::Search::Result;
 
+=item gui_query
+
+In WWW::Search::Ask, the default query is the same as the GUI query.
+
+=cut
+
 sub gui_query
   {
   my $self = shift;
   return $self->native_query(@_);
   } # gui_query
+
+=item native_setup_search
+
+=cut
 
 sub native_setup_search
   {
@@ -115,7 +107,7 @@ sub native_setup_search
   } # native_setup_search
 
 
-sub preprocess_results_page_OFF
+sub _preprocess_results_page_OFF
   {
   my $self = shift;
   my $sPage = shift;
@@ -123,6 +115,10 @@ sub preprocess_results_page_OFF
   return $sPage;
   } # preprocess_results_page
 
+
+=item parse_tree
+
+=cut
 
 sub parse_tree
   {
@@ -152,9 +148,12 @@ sub parse_tree
   my $sScore = '';
   my $sSize = '';
   my $sDate = '';
-  my $oUL = $oTree->look_down('_tag' => 'ul',
-                              'class' => 'organic',
-                             );
+  my $oDIV = $oTree->look_down('_tag' => 'div',
+                               'id' => 'organic',
+                              );
+  goto SKIP_RESULTS_LIST unless ref $oDIV;
+  my $oUL = $oDIV->look_down('_tag' => 'ul',
+                            );
   goto SKIP_RESULTS_LIST unless ref $oUL;
   print STDERR " +   oUL is ===". $oUL->as_HTML ."===\n" if 2 <= $self->{_debug};
   # The items in this list are the web search results:
@@ -209,6 +208,10 @@ SKIP_RESULTS_LIST:
   } # parse_tree
 
 
+=item strip
+
+=cut
+
 sub strip
   {
   my $sRaw = shift;
@@ -223,3 +226,26 @@ sub strip
 1;
 
 __END__
+
+=back
+
+=head1 SEE ALSO
+
+To make new back-ends, see L<WWW::Search>.
+
+=head1 BUGS
+
+Please tell the author if you find any!
+
+=head1 AUTHOR
+
+C<WWW::Search::Search> was originally written by Martin Thurn,
+based loosely on the code for C<WWW::Search::Lycos>.
+
+=head1 LEGALESE
+
+THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+=cut
