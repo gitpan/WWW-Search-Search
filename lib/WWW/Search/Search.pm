@@ -1,4 +1,4 @@
-# $Id: Search.pm,v 1.10 2008/03/23 18:35:59 Martin Exp $
+# $Id: Search.pm,v 1.13 2008/07/21 03:25:19 Martin Exp $
 
 =head1 NAME
 
@@ -39,13 +39,14 @@ use warnings;
 use base 'WWW::Search';
 
 our
-$VERSION = do { my @r = (q$Revision: 1.10 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 1.13 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 my $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use Carp;
 use URI::Escape;
 use WWW::Search;
-use WWW::Search::Result;
+# We need the version with the add_sources() method:
+use WWW::SearchResult 2.078;
 
 =item gui_query
 
@@ -116,11 +117,7 @@ sub _preprocess_results_page_OFF
   } # preprocess_results_page
 
 
-=item parse_tree
-
-=cut
-
-sub parse_tree
+sub _parse_tree
   {
   my $self = shift;
   my $oTree = shift;
@@ -135,12 +132,12 @@ sub parse_tree
       {
       my $sRC = $oTITLE->as_text;
       print STDERR " +   RC == $sRC\n" if 2 <= $self->{_debug};
-      if ($sRC =~ m!RESULTS\s+\d+\s+-\s+\d+\s+OF\s+(?:ABOUT\s+)?([0-9,]+)\s+FOR\b!i)
+      if ($sRC =~ m!RESULTS\s+\d+\s*-\s*\d+\s+OF\s+(?:ABOUT\s+)?([0-9,]+)!i)
         {
         my $sCount = $1;
-        print STDERR " +     raw    count == $sCount\n" if 3 <= $self->{_debug};
+        print STDERR " +     raw    count == $sCount\n" if 2 <= $self->{_debug};
         $sCount =~ s!,!!g;
-        print STDERR " +     cooked count == $sCount\n" if 3 <= $self->{_debug};
+        print STDERR " +     cooked count == $sCount\n" if 2 <= $self->{_debug};
         $self->approximate_result_count($sCount);
         } # if number pattern matches
       } # if found DIV
@@ -155,39 +152,49 @@ sub parse_tree
   my $oUL = $oDIV->look_down('_tag' => 'ul',
                             );
   goto SKIP_RESULTS_LIST unless ref $oUL;
-  print STDERR " +   oUL is ===". $oUL->as_HTML ."===\n" if 2 <= $self->{_debug};
+  # print STDERR " +   oUL is ===". $oUL->as_HTML ."===\n" if 2 <= $self->{_debug};
   # The items in this list are the web search results:
   my @aoLI = $oUL->look_down(_tag => 'li');
  LI_TAG:
   foreach my $oLI (@aoLI)
     {
     next LI_TAG unless ref $oLI;
-    my $oAtitle = $oLI->look_down(_tag => 'a',
-                                 class => 'title');
+    print STDERR " +   oLI is ===". $oLI->as_HTML ."===\n" if 2 <= $self->{_debug};
+    my $oPtitle = $oLI->look_down(_tag => 'p',
+                                  class => 'title');
+    next LI_TAG unless ref $oPtitle;
+    my $oAtitle = $oPtitle->look_down(_tag => 'a');
     next LI_TAG unless ref $oAtitle;
+    my $hit = new WWW::SearchResult;
     my $sTitle = $oAtitle->as_text;
+    $hit->title($sTitle);
     my $sURL = $oAtitle->attr('href');
     if ($sURL =~ m!,(http.+)\Z!)
       {
       $sURL = uri_unescape($1);
       } # if
-    $oAtitle->detach;
-    $oAtitle->delete;
-    my $oSPANurl = $oLI->look_down(_tag => 'span',
-                                   class => 'url');
-    next LI_TAG unless ref $oSPANurl;
-    # my $sURL = 'http://'. $oSPANurl->as_text;
-    # $sURL =~ s!\240.+!!;
-    # Delete so that what's left is the description:
-    $oSPANurl->detach;
-    $oSPANurl->delete;
-    my $sDesc = $oLI->as_text;
-    print STDERR " +   found desc ===$sDesc===\n" if 2 <= $self->{_debug};
-
-    my $hit = new WWW::Search::Result;
     $hit->add_url($sURL);
-    $hit->title($sTitle);
-    $hit->description(&strip($sDesc));
+    my $oSPANurl = $oLI->look_down(_tag => 'p',
+                                   class => 'url');
+    if (ref $oSPANurl)
+      {
+      # Parse out the source sites:
+      my $sSrc = $oSPANurl->as_text;
+      if ($sSrc =~ m/\[\s*Result\s+from\s+(.+?)\s*\]/)
+        {
+        my $sSrcs = $1;
+        my @asSrc = split /,\s*/, $sSrcs;
+        $hit->add_sources(@asSrc);
+        } # if
+      } # if
+    my $oPdesc = $oLI->look_down(_tag => 'p',
+                                 class => 'desc');
+    if (ref $oPdesc)
+      {
+      my $sDesc = $oLI->as_text;
+      print STDERR " +   found desc ===$sDesc===\n" if 2 <= $self->{_debug};
+      $hit->description(_strip($sDesc));
+      } # if
     push(@{$self->{cache}}, $hit);
     $self->{'_num_hits'}++;
     $hits_found++;
@@ -205,14 +212,10 @@ SKIP_RESULTS_LIST:
     } # if
  SKIP_NEXT_LINK:
   return $hits_found;
-  } # parse_tree
+  } # _parse_tree
 
 
-=item strip
-
-=cut
-
-sub strip
+sub _strip
   {
   my $sRaw = shift;
   my $s = &WWW::Search::strip_tags($sRaw);
@@ -221,7 +224,7 @@ sub strip
   # Strip trailing whitespace:
   $s =~ s!  [\240\t\r\n\ ]+\Z!!x;
   return $s;
-  } # strip
+  } # _strip
 
 1;
 
@@ -242,10 +245,8 @@ Please tell the author if you find any!
 C<WWW::Search::Search> was originally written by Martin Thurn,
 based loosely on the code for C<WWW::Search::Lycos>.
 
-=head1 LEGALESE
+=head1 LICENSE
 
-THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+This software is released under the same license as Perl itself.
 
 =cut

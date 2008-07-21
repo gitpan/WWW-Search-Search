@@ -1,14 +1,16 @@
 
-# $Id: search-basic.t,v 1.4 2008/03/23 18:48:39 Martin Exp $
+# $Id: search-basic.t,v 1.6 2008/07/21 03:26:00 Martin Exp $
 
 use blib;
 use Test::More no_plan;
 
-BEGIN { use_ok('WWW::Search') };
-BEGIN { use_ok('WWW::Search::Test') };
-BEGIN { use_ok('WWW::Search::Search') };
+use WWW::Search::Test;
+BEGIN
+  {
+  use_ok('WWW::Search::Search');
+  } # end of BEGIN block
 
-&tm_new_engine('Search');
+tm_new_engine('Search');
 
 my $iDebug = 0;
 my $iDump = 0;
@@ -18,12 +20,12 @@ my @ao;
 
 # This test returns no results (but we should not get an HTTP error):
 diag("Sending bogus query to search.com...");
-&tm_run_test('normal', $WWW::Search::Test::bogus_query, 0, 0, $iDebug);
-TEST_NOW:
+tm_run_test('normal', $WWW::Search::Test::bogus_query, 0, 0, $iDebug);
+# TEST_NOW:
 diag("Sending 1-page query to search.com...");
 $iDebug = 0;
 $iDump = 0;
-&tm_run_test('normal', 'oden'.'istic', 1, 9, $iDebug, $iDump);
+tm_run_test('normal', 'oden'.'istic', 1, 9, $iDebug, $iDump);
 # Look at some actual results:
 @ao = $WWW::Search::Test::oSearch->results();
 cmp_ok(0, '<', scalar(@ao), 'got any results');
@@ -40,12 +42,12 @@ foreach my $oResult (@ao)
          'result description is not empty');
   } # foreach
 # goto ALL_DONE; # for debugging
+TEST_NOW:
 diag("Sending multi-page query to search.com...");
 $iDebug = 0;
 $iDump = 0;
-&tm_run_test('normal', 'the lovely Britney Spears', 21, undef, $iDebug, $iDump);
+tm_run_test('normal', 'the lovely Britney Spears', 21, undef, $iDebug, $iDump);
 ALL_DONE:
 exit 0;
 
 __END__
-
