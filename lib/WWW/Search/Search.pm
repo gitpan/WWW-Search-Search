@@ -1,4 +1,4 @@
-# $Id: Search.pm,v 1.13 2008/07/21 03:25:19 Martin Exp $
+# $Id: Search.pm,v 1.14 2008/07/26 19:10:22 Martin Exp $
 
 =head1 NAME
 
@@ -39,7 +39,7 @@ use warnings;
 use base 'WWW::Search';
 
 our
-$VERSION = do { my @r = (q$Revision: 1.13 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 1.14 $ =~ /\d+/g); sprintf "%d."."%03d" x $#r, @r };
 my $MAINTAINER = 'Martin Thurn <mthurn@cpan.org>';
 
 use Carp;
@@ -50,7 +50,7 @@ use WWW::SearchResult 2.078;
 
 =item gui_query
 
-In WWW::Search::Ask, the default query is the same as the GUI query.
+In WWW::Search::Search, the default query is the same as the GUI query.
 
 =cut
 

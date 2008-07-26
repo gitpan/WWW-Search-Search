@@ -19,6 +19,6 @@ no_index:
 requires:
   Carp: 0
   URI::Escape: 0
-  WWW::Search: 0
+  WWW::SearchResult: 2.078
   perl: 5.004
-version: 1.013
+version: 1.014

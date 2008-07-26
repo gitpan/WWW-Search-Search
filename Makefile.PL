@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.5 2008/07/21 03:25:11 Martin Exp $
+# $Id: Makefile.PL,v 1.6 2008/07/26 19:09:45 Martin Exp $
 
 use inc::Module::Install;
 
@@ -8,7 +8,7 @@ author('Martin Thurn <mthurn@cpan.org>');
 requires('perl' => 5.004);
 requires('Carp');
 requires('URI::Escape');
-requires('WWW::Search');
+requires('WWW::SearchResult' => 2.078);
 build_requires('Test::More');
 
 WriteAll;
