@@ -1,5 +1,5 @@
 
-# $Id: search-basic.t,v 1.6 2008/07/21 03:26:00 Martin Exp $
+# $Id: search-basic.t,v 1.7 2008/07/27 16:33:24 Martin Exp $
 
 use blib;
 use Test::More no_plan;
@@ -25,7 +25,7 @@ tm_run_test('normal', $WWW::Search::Test::bogus_query, 0, 0, $iDebug);
 diag("Sending 1-page query to search.com...");
 $iDebug = 0;
 $iDump = 0;
-tm_run_test('normal', 'oden'.'istic', 1, 9, $iDebug, $iDump);
+tm_run_test('normal', 'foooo'.'ooooooooolish', 1, 9, $iDebug, $iDump);
 # Look at some actual results:
 @ao = $WWW::Search::Test::oSearch->results();
 cmp_ok(0, '<', scalar(@ao), 'got any results');
